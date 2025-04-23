@@ -25,4 +25,3 @@ return res.status(200).json({
     requestId: req.headers['x-vercel-id'] || 'unknown'
   });
 }
-// ... existing code ...

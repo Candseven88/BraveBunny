@@ -31,8 +31,8 @@ async function generateStory() {
     const safeError = error.message.replace(/[^a-zA-Z0-9 .,-]/g, '');
     resultDiv.innerHTML = `
       <div class="error-alert">
-        <p>${safeError}</p>
-        <small>Please try again later or contact support</small>
+        <p>Service unavailable (Error: ${safeError})</p>
+        <small>Request ID: ${error.requestId || 'none'}</small>
       </div>
     `;
     resultDiv.className = 'error';
