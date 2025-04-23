@@ -1,16 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>BraveBunny Story Test</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>Story Generator</h1>
-    <textarea id="prompt" placeholder="Enter story idea..."></textarea>
-    <button onclick="generateStory()">Generate Story</button>
-    <div id="result" class="hidden"></div>
+<!-- ... existing code ... -->
+<div class="cover-generator" id="cover-generator">
+  <h2>Create Your Story Cover</h2>
+  <div class="form-group">
+    <label for="cover-image">Upload Child's Portrait (Optional)</label>
+    <input type="file" id="cover-image" accept="image/*">
   </div>
-  <script src="js/app.js"></script>
-</body>
-</html>
+  <div class="form-group">
+    <label for="cover-prompt">Story Prompt</label>
+    <textarea id="cover-prompt" placeholder="Describe your story..."></textarea>
+  </div>
+  <button id="generate-btn" class="btn-primary">Generate Cover</button>
+  <div id="loading-spinner" class="spinner" style="display:none;"></div>
+  <div id="cover-result" class="cover-result"></div>
+</div>
+<!-- ... existing code ... -->
