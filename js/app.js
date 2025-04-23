@@ -28,7 +28,13 @@ async function generateStory() {
       throw new Error(data.error || 'Unknown error');
     }
   } catch (error) {
-    resultDiv.innerHTML = `Error: ${error.message.replace(/"/g, '')}`;
+    const safeError = error.message.replace(/[^a-zA-Z0-9 .,-]/g, '');
+    resultDiv.innerHTML = `
+      <div class="error-alert">
+        <p>${safeError}</p>
+        <small>Please try again later or contact support</small>
+      </div>
+    `;
     resultDiv.className = 'error';
   }
   resultDiv.classList.remove('hidden');

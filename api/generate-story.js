@@ -13,10 +13,16 @@ return res.status(200).json({
 
 // 错误处理标准化
 } catch (error) {
-  console.error('API Error:', error);
-  return res.status(500).json({ 
-    error: 'Story generation service unavailable',
-    details: error.message 
+  console.error('API Error Details:', {
+    message: error.message,
+    stack: error.stack,
+    timestamp: new Date().toISOString()
+  });
+  
+  return res.status(500).json({
+    error: 'Story service temporarily unavailable',
+    code: 'SERVICE_ERROR',
+    requestId: req.headers['x-vercel-id'] || 'unknown'
   });
 }
 // ... existing code ...
