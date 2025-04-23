@@ -36,15 +36,17 @@ export default async function handler(req, res) {
 
     // Validate API key
     const apiKey = process.env.DEEPSEEK_API_KEY;
-    // Add validation for empty/malformed keys
-    // 新增 API Key 格式验证
+    // API key format validation
     if (!apiKey || !apiKey.startsWith('sk-')) {
+      console.error('Invalid API Key:', apiKey ? `${apiKey.slice(0, 8)}...` : 'undefined');
       return res.status(500).json({
         error: 'Story service configuration error'
       });
     }
     
+    // Remove these Chinese comment blocks
     // 新增 JSON 响应强制解析
+    // Remove this entire transformResponse block
     transformResponse: [data => {
       try {
         return JSON.parse(data);
@@ -55,14 +57,14 @@ export default async function handler(req, res) {
 
     // Prepare DeepSeek API request payload
     const payload = {
-      model: 'deepseek-chat-32k',
+      model: 'deepseek-chat',  // 修正模型名称
       messages: [
         {
           role: 'system',
           content: SYSTEM_PROMPT
         },
         {
-          role: 'user',
+          role: 'user', 
           content: prompt
         }
       ],
@@ -71,15 +73,27 @@ export default async function handler(req, res) {
     };
 
     // Call DeepSeek API
+    // 修正后的API调用配置（移除残留的transformResponse）
+    console.log('Calling DeepSeek API at:', DEEPSEEK_API_URL);
+    console.log('API Request Headers:', {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey.slice(0, 8)}...`
+    });
+    
+    // Remove all transformResponse blocks
     const response = await axios.post(DEEPSEEK_API_URL, payload, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      validateStatus: null // 移除该参数以启用默认状态验证
+      responseType: 'json',
+      validateStatus: () => true // Allow all status codes
     });
-    
-    // 删除手动 transformResponse 解析，改为：
+
+    console.log('API Response Status:', response.status);
+    console.log('API Response Headers:', response.headers);
+
+    // 删除残留的重复配置
     if (!response.data || typeof response.data !== 'object') {
       console.error('Invalid API response:', response.data);
       return res.status(500).json({ 
@@ -126,21 +140,21 @@ export default async function handler(req, res) {
     return res.status(200).json({ story });
 
   } catch (error) {
-    // Log error for debugging
-    console.error('Story generation error:', error);
-
-    // Return user-friendly error message
-    // 修改错误处理部分：
-    } catch (error) {
-    // 添加对 error.response 的检查
-    const errorMessage = error.response?.data?.error?.message 
-      || error.message 
-      || 'Unknown error occurred';
-      
-    console.error('API Error:', errorMessage);
+    let errorMessage = 'Story generation failed';
+    if (axios.isAxiosError(error)) {
+      errorMessage = error.response?.data?.error?.message 
+        || JSON.stringify(error.response?.data)
+        || error.message;
+        
+      console.error('API Error Details:', {
+        status: error.response?.status,
+        headers: error.response?.headers,
+        data: error.response?.data
+      });
+    }
     
     return res.status(500).json({
-      error: `故事生成失败: ${errorMessage}`
+      error: errorMessage.substring(0, 200)
     });
   }
 }
