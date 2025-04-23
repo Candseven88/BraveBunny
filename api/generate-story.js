@@ -76,13 +76,14 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      validateStatus: null
+      validateStatus: null // 移除该参数以启用默认状态验证
     });
-    // 新增响应类型验证
-    if (typeof response.data !== 'object' || response.data.error) {
-      console.error('DeepSeek API 返回异常响应:', response.data);
-      return res.status(500).json({
-        error: 'Story generation service returned invalid response'
+    
+    // 删除手动 transformResponse 解析，改为：
+    if (!response.data || typeof response.data !== 'object') {
+      console.error('Invalid API response:', response.data);
+      return res.status(500).json({ 
+        error: 'Story generation service unavailable' 
       });
     }
 
@@ -129,8 +130,17 @@ export default async function handler(req, res) {
     console.error('Story generation error:', error);
 
     // Return user-friendly error message
+    // 修改错误处理部分：
+    } catch (error) {
+    // 添加对 error.response 的检查
+    const errorMessage = error.response?.data?.error?.message 
+      || error.message 
+      || 'Unknown error occurred';
+      
+    console.error('API Error:', errorMessage);
+    
     return res.status(500).json({
-      error: 'An unexpected error occurred while generating your story. Please try again.'
+      error: `故事生成失败: ${errorMessage}`
     });
   }
 }
