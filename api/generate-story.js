@@ -36,15 +36,26 @@ export default async function handler(req, res) {
 
     // Validate API key
     const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
+    // Add validation for empty/malformed keys
+    // 新增 API Key 格式验证
+    if (!apiKey || !apiKey.startsWith('sk-')) {
       return res.status(500).json({
-        error: 'Story generation service is not properly configured.'
+        error: 'Story service configuration error'
       });
     }
+    
+    // 新增 JSON 响应强制解析
+    transformResponse: [data => {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        return { error: `Invalid JSON response: ${data.substring(0, 100)}` };
+      }
+    }]
 
     // Prepare DeepSeek API request payload
     const payload = {
-      model: 'deepseek-chat',
+      model: 'deepseek-chat-32k',
       messages: [
         {
           role: 'system',
@@ -65,8 +76,15 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      validateStatus: null // Allow any status code
+      validateStatus: null
     });
+    // 新增响应类型验证
+    if (typeof response.data !== 'object' || response.data.error) {
+      console.error('DeepSeek API 返回异常响应:', response.data);
+      return res.status(500).json({
+        error: 'Story generation service returned invalid response'
+      });
+    }
 
     // Handle API errors
     if (response.status !== 200) {
