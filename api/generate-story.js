@@ -87,7 +87,8 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${apiKey}`
       },
       responseType: 'json',
-      validateStatus: () => true // Allow all status codes
+      validateStatus: () => true,
+      timeout: 10000  // 新增超时设置
     });
 
     console.log('API Response Status:', response.status);
@@ -143,16 +144,11 @@ export default async function handler(req, res) {
     let errorMessage = 'Story generation failed';
     if (axios.isAxiosError(error)) {
       errorMessage = error.response?.data?.error?.message 
-        || JSON.stringify(error.response?.data)
+        || JSON.stringify(error.response?.data)  // 确保序列化错误响应
         || error.message;
-        
-      console.error('API Error Details:', {
-        status: error.response?.status,
-        headers: error.response?.headers,
-        data: error.response?.data
-      });
     }
     
+    // 强制返回标准JSON格式
     return res.status(500).json({
       error: errorMessage.substring(0, 200)
     });
