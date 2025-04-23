@@ -13,10 +13,10 @@ return res.status(200).json({
 
 // 错误处理标准化
 } catch (error) {
-  console.error('API Error:', error.stack);
-  return res.status(500).json({
-    error: 'Story generation failed. Please try again later.',
-    logId: Date.now().toString(36)
+  console.error('API Error:', error);
+  return res.status(500).json({ 
+    error: 'Story generation service unavailable',
+    details: error.message 
   });
 }
 // ... existing code ...
