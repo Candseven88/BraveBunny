@@ -47,6 +47,7 @@ export default async function handler(req, res) {
     // Remove these Chinese comment blocks
     // 新增 JSON 响应强制解析
     // Remove this entire transformResponse block
+    // 删除这个残留的transformResponse配置块（65-73行）
     transformResponse: [data => {
       try {
         return JSON.parse(data);
@@ -141,14 +142,17 @@ export default async function handler(req, res) {
     return res.status(200).json({ story });
 
   } catch (error) {
-    let errorMessage = 'Story generation failed';
-    if (axios.isAxiosError(error)) {
-      errorMessage = error.response?.data?.error?.message 
-        || JSON.stringify(error.response?.data)  // 确保序列化错误响应
-        || error.message;
+    let errorMessage;
+    try {
+      errorMessage = JSON.stringify({
+        type: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+    } catch {
+      errorMessage = '"Unknown error"';
     }
     
-    // 强制返回标准JSON格式
     return res.status(500).json({
       error: errorMessage.substring(0, 200)
     });
